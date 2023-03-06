@@ -4,6 +4,8 @@ from datetime import datetime
 import urllib.request
 import webbrowser
 import config
+from lyricsgenius import Genius
+import random
 import wikipedia
 
 
@@ -68,15 +70,31 @@ def run_rosa():
 # Executing commands
 def execute_commands(command):
     # Telling time
-    if 'time' in command:
+    if 'date' in command:
         time = datetime.now().strftime("%d/%m/%Y")
-        rosa_talk('The current time is ' + time)
+        rosa_talk('The current date is ' + time)
     # Opening Uni stuff
     if 'uni' in command:
         open_url("https://canvas.qut.edu.au/")
-    # Say a Lyric
+        rosa_talk('I have opened canvas')
+    # Say a lana lyric
+    if 'lana' or 'del' or 'rey' or 'lyric' in command:
+        lyric = get_lyrics()
+        print(lyric)
+        rosa_talk(lyric)
 
 
-run_rosa()
+def get_lyrics():
+    """
+    Get a random Lana Del Rey lyric
+    :return: string
+    """
+    genius = Genius(config.api_key)
+    artist = genius.search_artist('Lana Del Rey', max_songs=5)
+    songs = artist.songs
+    lyrics = [song.lyrics.splitlines() for song in songs]
+    return random.choice(random.choice(lyrics))
 
 
+if __name__ == "__main__":
+    run_rosa()
