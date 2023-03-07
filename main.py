@@ -4,9 +4,7 @@ from datetime import datetime
 import urllib.request
 import webbrowser
 import config
-from lyricsgenius import Genius
-import random
-import wikipedia
+import openai
 
 
 # Opening a url
@@ -52,19 +50,30 @@ def get_command():
                 command = command.replace('rosa', '')
                 print(command)
             else:
-                print("Say my name")
+                pass
 
     except Exception as e:
         return "No voice detected...."
     return command
 
 
-# Running Rosa and executing commands
-def run_rosa():
-    rosa_talk('Hello, How can i help?')
-    rosa_command = get_command()
-    print(rosa_command)
-    execute_commands(rosa_command)
+# Using openai to respond
+def openai_response(command):
+    openai.api_key = config.openai_key
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a chatbot"},
+            {"role": "user", "content": command},
+        ]
+    )
+
+    result = ''
+    for choice in response.choices:
+        result += choice.message.content
+
+    rosa_talk(result)
+    return result
 
 
 # Executing commands
@@ -77,24 +86,19 @@ def execute_commands(command):
     if 'uni' in command:
         open_url("https://canvas.qut.edu.au/")
         rosa_talk('I have opened canvas')
-    # Say a lana lyric
-    if 'lana' or 'del' or 'rey' or 'lyric' in command:
-        lyric = get_lyrics()
-        print(lyric)
-        rosa_talk(lyric)
+    else:
+        result = openai_response(command)
+        run_rosa(result)
 
 
-def get_lyrics():
-    """
-    Get a random Lana Del Rey lyric
-    :return: string
-    """
-    genius = Genius(config.api_key)
-    artist = genius.search_artist('Lana Del Rey', max_songs=5)
-    songs = artist.songs
-    lyrics = [song.lyrics.splitlines() for song in songs]
-    return random.choice(random.choice(lyrics))
+# Running Rosa and executing commands
+def run_rosa(command):
+    openai_response(command)
+    rosa_command = get_command()
+    print(rosa_command)
+    execute_commands(rosa_command)
 
 
 if __name__ == "__main__":
-    run_rosa()
+    run_rosa("Hello, How can i help?")
+
