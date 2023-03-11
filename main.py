@@ -5,6 +5,7 @@ import urllib.request
 import webbrowser
 import config
 import openai
+import requests
 
 
 # Opening a url
@@ -53,7 +54,8 @@ def get_command():
                 pass
 
     except Exception as e:
-        return "No voice detected...."
+        rosa_talk("No voice detected..")
+
     return command
 
 
@@ -72,8 +74,18 @@ def openai_response(command):
     for choice in response.choices:
         result += choice.message.content
 
-    rosa_talk(result)
     return result
+
+
+# Using OpenWeatherMap API
+def get_weather(city):
+    url = f'http://api.openweathermap.org/data/2.5/weather?&q={city}&appid={config.openweathermap_key}&units=metric'
+    response = requests.get(url)
+    data = response.json()
+    forcast = data['weather'][0]['description']
+    temp = data['main']['temp']
+
+    return f"The forcast for {city} is {str(forcast)} and the temperature is {str(temp)}"
 
 
 # Executing commands
@@ -86,19 +98,31 @@ def execute_commands(command):
     if 'uni' in command:
         open_url("https://canvas.qut.edu.au/")
         rosa_talk('I have opened canvas')
+    # Getting weather
+    if 'weather' in command:
+        rosa_talk("What city?")
+        city = get_command()
+        rosa_talk(get_weather(city))
+    # Quitting rosa
+    if 'quit' in command:
+        rosa_talk("Goodbye")
+        quit()
+
     else:
         result = openai_response(command)
-        run_rosa(result)
+        rosa_talk(result)
+        print(result)
+
+    run_rosa()
 
 
 # Running Rosa and executing commands
-def run_rosa(command):
-    openai_response(command)
+def run_rosa():
     rosa_command = get_command()
     print(rosa_command)
     execute_commands(rosa_command)
 
 
 if __name__ == "__main__":
-    run_rosa("Hello, How can i help?")
-
+    rosa_talk("Hello, how can i help you today?")
+    run_rosa()
