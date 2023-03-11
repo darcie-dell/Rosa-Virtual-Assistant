@@ -55,6 +55,7 @@ def get_command():
 
     except Exception as e:
         rosa_talk("No voice detected..")
+        return "placeholer"
 
     return command
 
@@ -95,24 +96,25 @@ def execute_commands(command):
         time = datetime.now().strftime("%d/%m/%Y")
         rosa_talk('The current date is ' + time)
     # Opening Uni stuff
-    if 'uni' in command:
+    elif 'uni' in command:
         open_url("https://canvas.qut.edu.au/")
         rosa_talk('I have opened canvas')
     # Getting weather
-    if 'weather' in command:
+    elif 'weather' in command:
         rosa_talk("What city?")
         city = get_command()
         rosa_talk(get_weather(city))
-    # Quitting rosa
-    if 'quit' in command:
-        rosa_talk("Goodbye")
-        quit()
 
+    elif 'what is your name' in command:
+        rosa_talk("My name is Rosa")
+    # Quitting rosa
+    elif 'quit' in command:
+        rosa_talk("Goodbye")
+        return
     else:
         result = openai_response(command)
         rosa_talk(result)
         print(result)
-
     run_rosa()
 
 
